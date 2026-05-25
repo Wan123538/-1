@@ -1,13 +1,342 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>随机抽奖/抽签工具</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸运抽奖 - 随机抽签工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0f23;
+            --gold-primary: #f4d03f;
+            --gold-gradient: linear-gradient(135deg, #f4d03f 0%, #e6b800 50%, #f4d03f 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: #fff;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .option-input {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+        .option-input:focus {
+            outline: none;
+            border-color: var(--gold-primary);
+        }
+
+        .option-counter {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--gold-primary);
+        }
+
+        .config-panel {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .count-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .count-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(244,208,63,0.2);
+            border: 2px solid var(--gold-primary);
+            color: var(--gold-primary);
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+
+        .count-display {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold-primary);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .lottery-btn {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: var(--gold-gradient);
+            border: none;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #0f0f23;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto;
+            box-shadow: 0 0 40px rgba(244,208,63,0.4);
+        }
+
+        .lottery-btn:hover:not(:disabled) { transform: scale(1.05); }
+        .lottery-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: rgba(244,208,63,0.2);
+            border: 2px solid rgba(244,208,63,0.4);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-card:first-child {
+            background: rgba(244,208,63,0.3);
+            border-color: var(--gold-primary);
+        }
+
+        .result-badge {
+            background: var(--gold-gradient);
+            color: #0f0f23;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .result-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--gold-primary);
+            background: transparent;
+            color: var(--gold-primary);
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: var(--gold-gradient);
+            color: #0f0f23;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--gold-gradient);
+            color: #0f0f23;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            transform: translateX(400px);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+        }
+
+        .notification.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>✨ 幸运抽奖 ✨</h1>
+            <p>随机抽签工具 · 公平公正</p>
+        </header>
+
+        <div class="card">
+            <h2 class="card-title">📝 输入选项</h2>
+            <textarea 
+                class="option-input" 
+                id="optionsInput"
+                placeholder="每行输入一个选项&#10;&#10;示例：&#10;张三&#10;李四&#10;王五"
+            >张三
+李四
+王五
+赵六
+钱七
+孙八
+周九
+吴十</textarea>
+            <div class="option-counter" id="optionCounter">0 个选项</div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">⚙️ 抽奖配置</h2>
+            <div class="config-panel">
+                <div class="count-selector">
+                    <button class="count-btn" id="decreaseBtn" onclick="changeWinnerCount(-1)">−</button>
+                    <span class="count-display" id="countDisplay">1</span>
+                    <button class="count-btn" id="increaseBtn" onclick="changeWinnerCount(1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <button class="lottery-btn" id="lotteryBtn" onclick="handleLottery()">🎰 开始抽奖</button>
+        </div>
+
+        <div class="card" id="resultsCard" style="display: none;">
+            <h2 class="card-title">🏆 中奖名单</h2>
+            <div class="results-grid" id="resultsGrid"></div>
+            <div class="result-actions">
+                <button class="action-btn" onclick="handleLottery()">🔄 重新抽取</button>
+                <button class="action-btn" onclick="handleCopy()">📋 复制结果</button>
+                <button class="action-btn" onclick="handleReset()">🗑️ 清空重置</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let winnerCount = 1;
+        let currentWinners = [];
+
+        function getOptions() {
+            const text = document.getElementById('optionsInput').value;
+            return text.split('\n').map(line => line.trim()).filter(line => line && line.length > 0);
+        }
+
+        function updateCounter() {
+            const options = getOptions();
+            document.getElementById('optionCounter').textContent = `${options.length} 个选项`;
+        }
+
+        function changeWinnerCount(delta) {
+            const options = getOptions();
+            winnerCount = Math.max(1, Math.min(options.length, winnerCount + delta));
+            document.getElementById('countDisplay').textContent = winnerCount;
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        function handleLottery() {
+            const options = getOptions();
+            
+            if (options.length === 0) {
+                showNotification('请先输入抽奖选项');
+                return;
+            }
+            
+            if (options.length < winnerCount) {
+                showNotification('选项数量不足');
+                return;
+            }
+
+            const shuffled = shuffleArray(options);
+            currentWinners = shuffled.slice(0, winnerCount);
+            
+            const resultsCard = document.getElementById('resultsCard');
+            const resultsGrid = document.getElementById('resultsGrid');
+            
+            resultsGrid.innerHTML = '';
+            resultsCard.style.display = 'block';
+
+            currentWinners.forEach((winner, index) => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <div class="result-badge">${index === 0 ? '🥇 一等奖' : `第 ${index + 1} 名`}</div>
+                    <div class="result-name">${winner}</div>
+                `;
+                resultsGrid.appendChild(card);
+            });
+
+            showNotification(`恭喜 ${currentWinners.length} 位幸运儿！`);
+        }
+
+        function handleCopy() {
+            if (currentWinners.length === 0) return;
+            const text = `中奖名单：\n${currentWinners.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('结果已复制');
+            });
+        }
+
+        function handleReset() {
+            document.getElementById('optionsInput').value = '';
+            winnerCount = 1;
+            document.getElementById('countDisplay').textContent = '1';
+            updateCounter();
+            document.getElementById('resultsCard').style.display = 'none';
+            currentWinners = [];
+        }
+
+        document.getElementById('optionsInput').addEventListener('input', updateCounter);
+        updateCounter();
+    </script>
+</body>
 </html>
