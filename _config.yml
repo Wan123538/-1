@@ -1,0 +1,14 @@
+title: 幸运抽奖
+description: 随机抽签工具
+show_downloads: false
+theme: jekyll-theme-cayman
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: null
+
+exclude:
+  - README.md
