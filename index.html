@@ -3,180 +3,846 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幸运抽奖</title>
+    <title>多功能工作台 - MultiTool Workspace</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #1a1a3e 0%, #2d1b4e 100%);
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a4e 50%, #0f234e 100%);
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             min-height: 100vh;
-            padding: 20px;
+            overflow-x: hidden;
         }
         
-        .container {
-            max-width: 600px;
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(139,92,246,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(59,130,246,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(168,85,247,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: bgPulse 6s ease-in-out infinite;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, rgba(139,92,246,0.03) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(139,92,246,0.03) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(139,92,246,0.03) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(139,92,246,0.03) 75%);
+            background-size: 60px 60px;
+            background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(139,92,246,0.5);
+            border-radius: 50%;
+            animation: float 10s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) translateX(100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15,15,35,0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
         }
         
-        h1 {
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #a855f7;
+        }
+        
+        .nav-logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+        }
+        
+        .nav-tools {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(59,130,246,0.3));
+            border-color: rgba(139,92,246,0.5);
+            color: #c4b5fd;
+            box-shadow: 0 0 20px rgba(139,92,246,0.2);
+        }
+        
+        .main-content {
+            margin-top: 90px;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - 90px);
+        }
+        
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tool-header {
             text-align: center;
-            color: #f4d03f;
+            margin-bottom: 35px;
+        }
+        
+        .decorative-illustration {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.2));
+            box-shadow: 0 8px 30px rgba(139,92,246,0.3);
+            border: 2px solid rgba(139,92,246,0.3);
+            animation: floatAnimation 4s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .lottery-icon, .todo-icon {
+            font-size: 4rem;
+            animation: bounce 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        
+        .tool-header h1 {
             font-size: 2.5rem;
-            margin-bottom: 30px;
-            text-shadow: 0 0 20px rgba(244,208,63,0.5);
+            color: #a855f7;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(168,85,247,0.5);
+        }
+        
+        .tool-header p {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.1rem;
         }
         
         .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            color: #a855f7;
+            font-size: 1.35rem;
+        }
+        
+        .card-title img {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139,92,246,0.5);
+        }
+        
+        .btn-secondary {
             background: rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239,68,68,0.4);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(239,68,68,0.5);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        textarea, input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(139,92,246,0.3);
+            border-radius: 15px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 20px rgba(139,92,246,0.3);
+        }
+        
+        textarea::placeholder, input::placeholder {
+            color: rgba(255,255,255,0.4);
         }
         
         textarea {
-            width: 100%;
             height: 150px;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid #f4d03f;
-            border-radius: 12px;
-            padding: 15px;
-            color: white;
-            font-size: 1rem;
             resize: vertical;
         }
         
-        textarea:focus {
-            outline: none;
-            box-shadow: 0 0 15px rgba(244,208,63,0.5);
-        }
-        
-        .config {
+        .config-row {
             display: flex;
             align-items: center;
-            gap: 20px;
-            margin: 20px 0;
+            justify-content: center;
+            gap: 30px;
+            margin: 25px 0;
         }
         
         .count-btn {
-            width: 45px;
-            height: 45px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            background: rgba(244,208,63,0.2);
-            border: 2px solid #f4d03f;
-            color: #f4d03f;
-            font-size: 1.5rem;
+            background: rgba(139,92,246,0.2);
+            border: 2px solid #8b5cf6;
+            color: #a855f7;
+            font-size: 2rem;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .count-btn:hover {
-            background: #f4d03f;
-            color: #1a1a3e;
+            background: #8b5cf6;
+            color: white;
+            transform: scale(1.1);
         }
         
         .count-display {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: bold;
-            color: #f4d03f;
-            min-width: 60px;
+            color: #a855f7;
+            min-width: 80px;
             text-align: center;
         }
         
-        .lottery-btn {
-            width: 100%;
-            padding: 20px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #f4d03f, #e6b800);
-            border: none;
-            border-radius: 25px;
-            color: #1a1a3e;
-            cursor: pointer;
-            margin: 20px 0;
-            transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(244,208,63,0.4);
+        .draw-area {
+            background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1));
+            border: 2px dashed rgba(139,92,246,0.5);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .lottery-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(244,208,63,0.6);
+        .draw-name {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #a855f7;
+            text-shadow: 0 0 30px rgba(168,85,247,0.8);
+            animation: bounce 0.3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+        
+        .draw-name.final {
+            animation: celebrate 0.6s ease-out;
+        }
+        
+        @keyframes celebrate {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.3); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
         }
         
         .result-card {
-            background: linear-gradient(135deg, rgba(244,208,63,0.3), rgba(224,86,253,0.2));
-            border: 2px solid #f4d03f;
-            border-radius: 12px;
-            padding: 20px;
+            background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.15));
+            border: 2px solid #8b5cf6;
+            border-radius: 16px;
+            padding: 25px;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         .result-badge {
-            background: #f4d03f;
-            color: #1a1a3e;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: inline-block;
         }
         
         .result-name {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: bold;
             color: white;
         }
         
-        .action-btns {
+        .result-prize {
+            color: rgba(255,255,255,0.7);
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 18px 28px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            transform: translateX(400px);
+            transition: transform 0.4s ease;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .toast.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(139,92,246,0.3);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+        }
+        
+        .todos-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .todo-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .todo-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .todo-item.completed {
+            opacity: 0.6;
+        }
+        
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .todo-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 2px solid rgba(139,92,246,0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .todo-checkbox:hover {
+            border-color: #8b5cf6;
+        }
+        
+        .todo-checkbox.checked {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-color: #8b5cf6;
+        }
+        
+        .todo-text {
+            flex: 1;
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        .todo-delete {
+            padding: 8px 12px;
+            background: rgba(239,68,68,0.2);
+            border: none;
+            border-radius: 10px;
+            color: #ef4444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        
+        .todo-item:hover .todo-delete {
+            opacity: 1;
+        }
+        
+        .todo-delete:hover {
+            background: rgba(239,68,68,0.3);
+        }
+        
+        .stats-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #a855f7;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .stat-label {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: rgba(15,15,35,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 90%;
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.4rem;
+            color: #a855f7;
+        }
+        
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .modal-body {
+            margin-bottom: 25px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .export-options {
             display: flex;
             gap: 15px;
             margin-top: 20px;
         }
         
-        .action-btn {
+        .export-btn {
             flex: 1;
-            padding: 12px;
-            border: 2px solid #f4d03f;
-            background: transparent;
-            color: #f4d03f;
-            border-radius: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid rgba(139,92,246,0.3);
+            background: rgba(139,92,246,0.1);
+            color: #a855f7;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
         
-        .action-btn:hover {
-            background: #f4d03f;
-            color: #1a1a3e;
+        .export-btn:hover {
+            background: rgba(139,92,246,0.2);
+            border-color: #8b5cf6;
         }
         
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #f4d03f;
-            color: #1a1a3e;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-weight: bold;
-            transform: translateX(400px);
-            transition: transform 0.4s;
-            z-index: 1000;
+        .export-btn i {
+            font-size: 1.8rem;
         }
         
-        .notification.show {
-            transform: translateX(0);
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 15px;
+                height: 65px;
+            }
+            
+            .nav-btn span {
+                display: none;
+            }
+            
+            .tool-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .draw-name {
+                font-size: 2.2rem;
+            }
+            
+            .count-display {
+                font-size: 2.2rem;
+            }
+            
+            .modal {
+                min-width: 90%;
+                padding: 25px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>✨ 幸运抽奖 ✨</h1>
-        
-        <div class="card">
-            <h3>📝 输入抽奖名单</h3>
-            <textarea id="namesInput" placeholder="每行输入一个名字&#10;&#10;示例：&#10;张三&#10;李四&#10;王五">张三
+    <div class="floating-particles" id="particles"></div>
+    
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="nav-logo-icon">⚡</div>
+                <span>MultiTool</span>
+            </div>
+            <div class="nav-tools">
+                <button class="nav-btn active" data-tool="lottery" onclick="switchTool('lottery')">
+                    <span>🎰</span>
+                    <span>抽奖</span>
+                </button>
+                <button class="nav-btn" data-tool="todo" onclick="switchTool('todo')">
+                    <span>📝</span>
+                    <span>待办</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="main-content">
+        <div id="lottery-tool" class="tool-container">
+            <div class="tool-header">
+                <div class="decorative-illustration">
+                    <div class="lottery-icon">🎉</div>
+                </div>
+                <h1>🎰 幸运抽奖</h1>
+                <p>Lucky Draw System</p>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stat-item">
+                    <div class="stat-value" id="lottery-total">0</div>
+                    <div class="stat-label">抽奖次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="lottery-winners">0</div>
+                    <div class="stat-label">中奖人数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="lottery-names">0</div>
+                    <div class="stat-label">名单数量</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>📋</span>
+                    <span>抽奖名单</span>
+                </div>
+                <textarea id="lottery-names-input" placeholder="每行输入一个名字&#10;&#10;示例：&#10;张三&#10;李四&#10;王五">张三
 李四
 王五
 赵六
@@ -184,51 +850,231 @@
 孙八
 周九
 吴十</textarea>
-            <div style="margin-top: 10px; color: #f4d03f;">已输入 <span id="count">0</span> 个选项</div>
-        </div>
-        
-        <div class="card">
-            <h3>⚙️ 抽取人数</h3>
-            <div class="config">
-                <button class="count-btn" onclick="changeCount(-1)">−</button>
-                <span class="count-display" id="countDisplay">1</span>
-                <button class="count-btn" onclick="changeCount(1)">+</button>
+                <div style="margin-top: 12px; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                    已输入 <span style="color: #a855f7; font-weight: bold;" id="lottery-names-count">0</span> 个名字
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>⚙️</span>
+                    <span>抽奖设置</span>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <label style="color: rgba(255,255,255,0.8); display: block; margin-bottom: 10px;">抽取人数</label>
+                    <div class="config-row">
+                        <button class="count-btn" onclick="lotteryChangeCount(-1)">−</button>
+                        <span class="count-display" id="lottery-count-display">1</span>
+                        <button class="count-btn" onclick="lotteryChangeCount(1)">+</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="color: rgba(255,255,255,0.8); display: block; margin-bottom: 10px;">奖品名称（可选）</label>
+                    <input type="text" id="lottery-prize-input" placeholder="例如：iPhone 15、现金红包 500元">
+                </div>
+            </div>
+            
+            <div class="draw-area" id="lottery-draw-area">
+                <span style="color: rgba(255,255,255,0.4); font-size: 1.2rem;">点击下方按钮开始抽奖</span>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%; padding: 20px; font-size: 1.4rem;" id="lottery-start-btn" onclick="lotteryStart()">
+                🎰 开始抽奖
+            </button>
+            
+            <div class="card" id="lottery-results-card" style="display: none;">
+                <div class="card-title">
+                    <span>🏆</span>
+                    <span>中奖名单</span>
+                </div>
+                <div id="lottery-results"></div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="lotteryStart()">🔄 继续抽取</button>
+                    <button class="btn btn-secondary" onclick="lotteryCopyResults()">📋 复制结果</button>
+                    <button class="btn btn-danger" onclick="lotteryReset()">🗑️ 重置</button>
+                </div>
             </div>
         </div>
         
-        <button class="lottery-btn" onclick="startLottery()">🎰 开始抽奖</button>
-        
-        <div class="card" id="resultsCard" style="display: none;">
-            <h3>🏆 中奖名单</h3>
-            <div id="results"></div>
-            <div class="action-btns">
-                <button class="action-btn" onclick="startLottery()">🔄 重新抽取</button>
-                <button class="action-btn" onclick="copyResults()">📋 复制结果</button>
-                <button class="action-btn" onclick="reset()">🗑️ 重置</button>
+        <div id="todo-tool" class="tool-container" style="display: none;">
+            <div class="tool-header">
+                <div class="decorative-illustration">
+                    <div class="todo-icon">📋</div>
+                </div>
+                <h1>📝 待办事项</h1>
+                <p>Task Management System</p>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stat-item">
+                    <div class="stat-value" id="todo-total">0</div>
+                    <div class="stat-label">总任务数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="todo-completed">0</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="todo-progress">0%</div>
+                    <div class="stat-label">完成率</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>➕</span>
+                    <span>添加任务</span>
+                </div>
+                <input type="text" id="todo-input" placeholder="输入新的待办事项..." onkeyup="todoAddOnEnter(event)">
+                <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="todoAdd()">
+                    ➕ 添加任务
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>✅</span>
+                    <span>任务列表</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="todo-progress-bar"></div>
+                    </div>
+                </div>
+                <div class="todos-container" id="todos-container">
+                    <div style="text-align: center; color: rgba(255,255,255,0.4); padding: 40px;">
+                        暂无任务，添加一个新任务开始吧！
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="showExportModal()">
+                📤 导出数据
+            </button>
+        </div>
+    </main>
+    
+    <div class="toast" id="toast"></div>
+    <div class="loading-overlay" id="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loading-text">加载中...</div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">📤 导出数据</div>
+                <button class="modal-close" onclick="hideExportModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 15px;">选择导出格式：</p>
+                <div class="export-options">
+                    <button class="export-btn" onclick="exportToJSON()">
+                        <i>📄</i>
+                        <span>JSON</span>
+                    </button>
+                    <button class="export-btn" onclick="exportToCSV()">
+                        <i>📊</i>
+                        <span>CSV</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideExportModal()">取消</button>
             </div>
         </div>
     </div>
     
-    <div class="notification" id="notification"></div>
+    <audio id="drawSound">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3" type="audio/mpeg">
+    
+    <audio id="winSound">
+        <source src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" type="audio/mpeg">
     
     <script>
-        let count = 1;
-        let winners = [];
+        let activeTool = 'lottery';
         
-        function updateCount() {
-            const names = document.getElementById('namesInput').value;
-            const lines = names.split('\n').filter(line => line.trim().length > 0);
-            document.getElementById('count').textContent = lines.length;
+        const lotteryData = {
+            count: 1,
+            winners: [],
+            totalDraws: 0,
+            totalWinners: 0
+        };
+        
+        let todos = [];
+        
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 25; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (8 + Math.random() * 6) + 's';
+                particle.style.background = `rgba(${Math.random() > 0.5 ? '139,92,246' : '59,130,246'},${0.3 + Math.random() * 0.3})`;
+                container.appendChild(particle);
+            }
         }
         
-        function changeCount(delta) {
-            const names = document.getElementById('namesInput').value;
-            const lines = names.split('\n').filter(line => line.trim().length > 0);
-            count = Math.max(1, Math.min(lines.length, count + delta));
-            document.getElementById('countDisplay').textContent = count;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
         
-        function shuffle(arr) {
+        function showLoading(text = '加载中...') {
+            const overlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-text').textContent = text;
+            overlay.classList.add('show');
+        }
+        
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.remove('show');
+        }
+        
+        function showExportModal() {
+            document.getElementById('export-modal').classList.add('show');
+        }
+        
+        function hideExportModal() {
+            document.getElementById('export-modal').classList.remove('show');
+        }
+        
+        function switchTool(toolName) {
+            if (activeTool === toolName) return;
+            
+            document.getElementById(`${activeTool}-tool`).style.display = 'none';
+            document.getElementById(`${toolName}-tool`).style.display = 'block';
+            
+            document.querySelector(`.nav-btn[data-tool="${activeTool}"]`).classList.remove('active');
+            document.querySelector(`.nav-btn[data-tool="${toolName}"]`).classList.add('active');
+            
+            activeTool = toolName;
+            
+            showToast(`已切换到${toolName === 'lottery' ? '抽奖' : '待办'}工具`, 'info');
+        }
+        
+        function lotteryUpdateCount() {
+            const names = document.getElementById('lottery-names-input').value;
+            const lines = names.split('\n').filter(line => line.trim().length > 0);
+            document.getElementById('lottery-names-count').textContent = lines.length;
+            document.getElementById('lottery-names').textContent = lines.length;
+        }
+        
+        function lotteryChangeCount(delta) {
+            const names = document.getElementById('lottery-names-input').value;
+            const lines = names.split('\n').filter(line => line.trim().length > 0);
+            lotteryData.count = Math.max(1, Math.min(lines.length, lotteryData.count + delta));
+            document.getElementById('lottery-count-display').textContent = lotteryData.count;
+        }
+        
+        function lotteryShuffle(arr) {
             const shuffled = [...arr];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -237,65 +1083,320 @@
             return shuffled;
         }
         
-        function showNotify(msg) {
-            const notify = document.getElementById('notification');
-            notify.textContent = msg;
-            notify.classList.add('show');
-            setTimeout(() => notify.classList.remove('show'), 3000);
+        function playSound(sound) {
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
         }
         
-        function startLottery() {
-            const names = document.getElementById('namesInput').value;
+        function lotteryStart() {
+            const namesInput = document.getElementById('lottery-names-input');
+            const names = namesInput.value;
             const lines = names.split('\n').filter(line => line.trim().length > 0);
             
             if (lines.length === 0) {
-                showNotify('请输入抽奖名单');
+                showToast('请先输入抽奖名单', 'error');
                 return;
             }
             
-            if (lines.length < count) {
-                showNotify('人数不足，请添加更多名字');
+            if (lines.length < lotteryData.count) {
+                showToast('人数不足，请添加更多名字', 'error');
                 return;
             }
             
-            const shuffled = shuffle(lines);
-            winners = shuffled.slice(0, count);
+            const startBtn = document.getElementById('lottery-start-btn');
+            startBtn.disabled = true;
+            startBtn.textContent = '🎰 抽奖中...';
             
-            const resultsCard = document.getElementById('resultsCard');
-            const resultsDiv = document.getElementById('results');
+            document.getElementById('lottery-results-card').style.display = 'none';
             
-            resultsDiv.innerHTML = '';
-            resultsCard.style.display = 'block';
+            const drawArea = document.getElementById('lottery-draw-area');
+            drawArea.innerHTML = '<span class="draw-name">🎲</span>';
             
-            winners.forEach((winner, idx) => {
-                const card = document.createElement('div');
-                card.className = 'result-card';
-                card.innerHTML = `
-                    <div class="result-badge">${idx === 0 ? '🥇 一等奖' : `第 ${idx + 1} 名`}</div>
-                    <div class="result-name">${winner}</div>
-                `;
-                resultsDiv.appendChild(card);
+            playSound(document.getElementById('drawSound'));
+            
+            let iterations = 0;
+            const maxIterations = 35;
+            
+            const interval = setInterval(() => {
+                const shuffled = lotteryShuffle(lines);
+                const randomName = shuffled[Math.floor(Math.random() * shuffled.length)];
+                drawArea.innerHTML = `<span class="draw-name">${randomName}</span>`;
+                
+                iterations++;
+                if (iterations >= maxIterations) {
+                    clearInterval(interval);
+                    lotteryFinish(lines);
+                }
+            }, 70);
+        }
+        
+        function lotteryFinish(lines) {
+            document.getElementById('drawSound').pause();
+            playSound(document.getElementById('winSound'));
+            
+            const shuffled = lotteryShuffle(lines);
+            lotteryData.winners = shuffled.slice(0, lotteryData.count);
+            
+            const drawArea = document.getElementById('lottery-draw-area');
+            drawArea.innerHTML = `<span class="draw-name final">🎉 ${lotteryData.winners[0]} 🎉</span>`;
+            
+            setTimeout(() => {
+                const resultsCard = document.getElementById('lottery-results-card');
+                const resultsDiv = document.getElementById('lottery-results');
+                
+                resultsDiv.innerHTML = '';
+                resultsCard.style.display = 'block';
+                
+                lotteryData.winners.forEach((winner, idx) => {
+                    setTimeout(() => {
+                        const card = document.createElement('div');
+                        card.className = 'result-card';
+                        const prize = document.getElementById('lottery-prize-input').value;
+                        const badges = ['🥇 一等奖', '🥈 二等奖', '🥉 三等奖'];
+                        const badge = idx < 3 ? badges[idx] : `第 ${idx + 1} 名`;
+                        
+                        card.innerHTML = `
+                            <div class="result-badge">${badge}</div>
+                            <div class="result-name">${winner}</div>
+                            ${prize ? `<div class="result-prize">奖品：${prize}</div>` : ''}
+                        `;
+                        resultsDiv.appendChild(card);
+                    }, idx * 200);
+                });
+                
+                lotteryData.totalDraws++;
+                lotteryData.totalWinners += lotteryData.winners.length;
+                document.getElementById('lottery-total').textContent = lotteryData.totalDraws;
+                document.getElementById('lottery-winners').textContent = lotteryData.totalWinners;
+                
+                localStorage.setItem('lotteryData', JSON.stringify(lotteryData));
+                
+                const startBtn = document.getElementById('lottery-start-btn');
+                startBtn.disabled = false;
+                startBtn.textContent = '🎰 开始抽奖';
+                
+                showToast(`恭喜 ${lotteryData.winners.length} 位幸运儿！`, 'success');
+            }, 900);
+        }
+        
+        function lotteryCopyResults() {
+            const prize = document.getElementById('lottery-prize-input').value || '奖品';
+            const text = lotteryData.winners.map((w, i) => `${i + 1}. ${w}${prize ? ` - ${prize}` : ''}`).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('已复制到剪贴板！', 'success');
             });
+        }
+        
+        function lotteryReset() {
+            document.getElementById('lottery-names-input').value = '';
+            document.getElementById('lottery-prize-input').value = '';
+            lotteryData.count = 1;
+            lotteryData.winners = [];
+            document.getElementById('lottery-count-display').textContent = '1';
+            lotteryUpdateCount();
+            document.getElementById('lottery-results-card').style.display = 'none';
+            const drawArea = document.getElementById('lottery-draw-area');
+            drawArea.innerHTML = '<span style="color: rgba(255,255,255,0.4); font-size: 1.2rem;">点击下方按钮开始抽奖</span>';
+            showToast('已重置抽奖数据', 'info');
+        }
+        
+        function todoAddOnEnter(event) {
+            if (event.key === 'Enter') {
+                todoAdd();
+            }
+        }
+        
+        function todoAdd() {
+            const input = document.getElementById('todo-input');
+            const text = input.value.trim();
             
-            showNotify(`恭喜 ${winners.length} 位幸运儿！`);
+            if (!text) {
+                showToast('请输入任务内容', 'error');
+                return;
+            }
+            
+            const todo = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                createdAt: new Date().toLocaleString('zh-CN')
+            };
+            
+            todos.push(todo);
+            input.value = '';
+            todoRender();
+            todoSave();
+            showToast('任务添加成功！', 'success');
         }
         
-        function copyResults() {
-            const text = winners.map((w, i) => `${i + 1}. ${w}`).join('\n');
-            navigator.clipboard.writeText(text).then(() => showNotify('已复制到剪贴板'));
+        function todoToggle(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                todoRender();
+                todoSave();
+                showToast(todo.completed ? '任务已完成！' : '任务已取消完成', 'success');
+            }
         }
         
-        function reset() {
-            document.getElementById('namesInput').value = '';
-            count = 1;
-            document.getElementById('countDisplay').textContent = '1';
-            updateCount();
-            document.getElementById('resultsCard').style.display = 'none';
-            winners = [];
+        function todoDelete(id) {
+            todos = todos.filter(t => t.id !== id);
+            todoRender();
+            todoSave();
+            showToast('任务已删除', 'info');
         }
         
-        document.getElementById('namesInput').addEventListener('input', updateCount);
-        updateCount();
+        function todoRender() {
+            const container = document.getElementById('todos-container');
+            
+            if (todos.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.4); padding: 40px;">暂无任务，添加一个新任务开始吧！</div>';
+                document.getElementById('todo-total').textContent = '0';
+                document.getElementById('todo-completed').textContent = '0';
+                document.getElementById('todo-progress').textContent = '0%';
+                document.getElementById('todo-progress-bar').style.width = '0%';
+                return;
+            }
+            
+            const completedCount = todos.filter(t => t.completed).length;
+            const progress = Math.round((completedCount / todos.length) * 100);
+            
+            document.getElementById('todo-total').textContent = todos.length;
+            document.getElementById('todo-completed').textContent = completedCount;
+            document.getElementById('todo-progress').textContent = `${progress}%`;
+            document.getElementById('todo-progress-bar').style.width = `${progress}%`;
+            
+            container.innerHTML = todos.map(todo => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" onclick="todoToggle(${todo.id})">
+                        ${todo.completed ? '✓' : ''}
+                    </div>
+                    <div class="todo-text">${todo.text}</div>
+                    <button class="todo-delete" onclick="todoDelete(${todo.id})">×</button>
+                </div>
+            `).join('');
+        }
+        
+        function todoSave() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+        
+        function exportToJSON() {
+            const data = {
+                todos: todos,
+                exportTime: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            downloadFile(blob, 'todos.json');
+            hideExportModal();
+            showToast('已导出为 JSON 文件', 'success');
+        }
+        
+        function exportToCSV() {
+            const headers = ['ID', '任务内容', '完成状态', '创建时间'];
+            const rows = todos.map(todo => [
+                todo.id,
+                `"${todo.text}"`,
+                todo.completed ? '已完成' : '未完成',
+                todo.createdAt
+            ]);
+            
+            const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            downloadFile(blob, 'todos.csv');
+            hideExportModal();
+            showToast('已导出为 CSV 文件', 'success');
+        }
+        
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        function loadData() {
+            showLoading('加载数据中...');
+            
+            setTimeout(() => {
+                const savedLottery = localStorage.getItem('lotteryData');
+                if (savedLottery) {
+                    const data = JSON.parse(savedLottery);
+                    lotteryData.totalDraws = data.totalDraws || 0;
+                    lotteryData.totalWinners = data.totalWinners || 0;
+                    document.getElementById('lottery-total').textContent = lotteryData.totalDraws;
+                    document.getElementById('lottery-winners').textContent = lotteryData.totalWinners;
+                }
+                
+                const savedTodos = localStorage.getItem('todos');
+                if (savedTodos) {
+                    todos = JSON.parse(savedTodos);
+                } else {
+                    todos = [
+                        { id: 1, text: '完成项目文档', completed: false, createdAt: '2024/1/1 10:00' },
+                        { id: 2, text: '代码审查', completed: true, createdAt: '2024/1/1 11:00' },
+                        { id: 3, text: '测试用例编写', completed: false, createdAt: '2024/1/1 14:00' }
+                    ];
+                }
+                
+                todoRender();
+                hideLoading();
+            }, 500);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            loadData();
+            lotteryUpdateCount();
+            
+            document.getElementById('lottery-names-input').addEventListener('input', lotteryUpdateCount);
+            
+            window.addEventListener('scroll', () => {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'n':
+                        e.preventDefault();
+                        if (activeTool === 'todo') {
+                            document.getElementById('todo-input').focus();
+                        } else {
+                            document.getElementById('lottery-names-input').focus();
+                        }
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        if (activeTool === 'todo') {
+                            todoSave();
+                            showToast('已保存', 'success');
+                        } else {
+                            localStorage.setItem('lotteryData', JSON.stringify(lotteryData));
+                            showToast('已保存', 'success');
+                        }
+                        break;
+                    case '1':
+                        e.preventDefault();
+                        switchTool('lottery');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        switchTool('todo');
+                        break;
+                }
+            }
+        });
     </script>
 </body>
 </html>
